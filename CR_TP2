@@ -69,7 +69,19 @@ Q) Pour que le montage se fasse automatique il faut spécifier l'option auto.
 
 Q) On peut utiliser extundelete pour récupérer les fs ext3 et ext4
 	extundelete /dev/sdaX --restore-file directory
-	mount -t debugfs none /sys/kernel/debug
+	debugfs est un utilitaire en ligne de commande. une fois lancé, il faut utiliser open pour selectionner le fs
+	Ensuite on utilise help et on se démmerde
+
+	dumpe2fs -h partition
+	et on a toutes les infos de la partition
+Q)	
+	dumpe2fs -h /dev/sda2 | grep inode
+	En supprimant Le compteur free inode a été incrémenté de 1, normal puisque fichier "supprimé"
+	Avec fsck il clean et donc le fichier n'est plus là car supprimé.
+
+	devrait fonctionner?
+
+Q)
 	
 	
 
