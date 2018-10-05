@@ -66,6 +66,10 @@ Q) fuser indique le(s) process sur le répertoire par leur pid
 	et fuser /mnt/3 n'affichera rien normal car on est sur 2
 Q) Pour que le montage se fasse automatique il faut spécifier l'option auto.
 	On peut monter sur 2 dossier différents, un fichier est crée dans l'un et dans l'autre il y sera aussi présent
+
+Q) On peut utiliser extundelete pour récupérer les fs ext3 et ext4
+	extundelete /dev/sdaX --restore-file directory
+	mount -t debugfs none /sys/kernel/debug
 	
 	
 
