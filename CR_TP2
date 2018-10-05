@@ -34,7 +34,38 @@ Création de partition
 	Depuis le Grub on fait e et on ajoute le contenu de ce fichier et pour faire les changements 
 	permanent: /etc/default/grub avec GRUB CMDLINE LINUX DEFAULT
 	
-	Le /etc/inittab indique le runlevel
+	Le /etc/rc*.d/inittab indique le runlevel où * = 0-6
 
+	Pour connaitre le runlevel : runlevel ou who -r
+
+
+Q) On fait un cat /etc/fstab 
+
+	Si on fait un mount, on voit tous les fs qui sont montés.	
+	On test on monte les partitions sur des fs.
+	
+	
+	/etc/mtab pour voir les points de montages actuel ainsi que leurs options =/= de /etc/fstab
+	
+	
+	UUID est un méchanisme d'identifiant unique pour chaque fs. Ils sont générés par la commande mkfs et évite les collisions
+	On peut voir directement les UUID par ls -l /dev/disk/by-uuid/
+	L'avantage est le peu de collision et reste présent même si on plus le disk sur un autre systeme.
+	Dès qu'il est resized/reformatted, l'UUID est changé et c'est chiant à lire	
+
+	Les FS peuvent avoir des Label, Id... UUID = Universally unique identifier
+
+Q) On utilise fdisk sur sda et p dans le menu et on a disklabel type
+
+Q) fdisk -l premier secteur : 2048
+	
+Q) En montant on écrase tout
+Q) on ne peut pas car point de montage occupé car on est dessu
+Q) fuser indique le(s) process sur le répertoire par leur pid
+	donc si on se place sur /mnt/2  on verra notre pid
+	et fuser /mnt/3 n'affichera rien normal car on est sur 2
+Q) Pour que le montage se fasse automatique il faut spécifier l'option auto.
+	On peut monter sur 2 dossier différents, un fichier est crée dans l'un et dans l'autre il y sera aussi présent
+	
 	
 
