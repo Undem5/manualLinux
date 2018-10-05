@@ -1,0 +1,40 @@
+
+
+
+Q1) On cherche man -k vlan
+
+	man 5 vlan-interfaces -> /etc/network/interfaces
+
+	man 8 vconfig -> /proc/net/vlan/config ou vlan/[vlan-device]
+Création de partition
+
+	fdisk /dev/sda
+	n, p 0, +500M,w
+
+	puis partprobe -> inform the OS of partition table change
+
+	On recherche dans le man de fdisk on voit un /proc/partitionsi
+	Il affiche le minor/major, la taille de block et le nom
+
+	La commande est partprobe pour indiquer au système les nouveautés
+
+	On va dans /proc/cpuinfo
+
+
+#### GRUB
+	grub-reboot? Sinon on peut modifier la conf dans /etc/default/grub
+	On peut spécifier l'OS qu'on veut lancer avec grub:
+		grub-set-default [num] ou num -> /boot/grub/menu.lst ??
+
+	.pf2 Canon Picture Style Editor /boot/grub/fonts/ -> Unifont Regular 16
+	grub.cfg est généré par grub-mkconfig
+	Sinon /proc/cmdline indique les paramètres passés au kernel lors du démarrage
+		ro read-only, quiet
+
+	Depuis le Grub on fait e et on ajoute le contenu de ce fichier et pour faire les changements 
+	permanent: /etc/default/grub avec GRUB CMDLINE LINUX DEFAULT
+	
+	Le /etc/inittab indique le runlevel
+
+	
+
