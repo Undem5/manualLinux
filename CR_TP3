@@ -1,0 +1,35 @@
+
+
+################### NETWORK CONFIGURATION ########################
+
+
+traceroute : Permet de voir le chemin du paquet
+	traceroute 8.8.8.8
+	
+lspci -v | grep Ethernet : Permet de voir le controlleur interface réseau
+				Ainsi que les modules kernel
+
+	Pour charger un module manuelle: modprobe module
+	Pour enlever un module: modprobe -r module
+				rmmod module
+	
+ip route add ADRESSERESEAU via GW dev INTERFACE
+
+démond dhcpd -> /etc/dhcpd.conf (overwrite /etc/resolv.conf)
+demon dhclient -> /etc/dhcp/dhcpclient.conf
+
+
+hostnamectl set-hostname name
+ou alternatif: hostname name
+
+LocalHost resolution : /etc/hosts (systemd)
+
+Changer nom interface réseau/modifier le MTU:
+	/etc/udev/rules.d/bidule.rules
+Les changements sont effectués au démarrage
+
+La commande ss -> netstat qui est déprécié
+
+	TCP sockets: ss -at
+	TPC sockets + port number: ss -atn
+	UDP Sockets: ss -au
