@@ -1,0 +1,102 @@
+
+
+
+Processus
+
+######	ps	######## 
+
+	Option sous BSD =/= Options sous UNIX
+ 
+	Différents Etats possibles (STAT):
+		Z zombie, X tué, R s'éxecutant 
+
+	### Commandes utiles ###
+	
+		ps -A : Affiche tous les process du system
+		ps axu : Pour le format BSD (USER TTY bonus)
+
+		ps -Af: full-format listing (Indique toutes les infos)
+
+		ps -x: Process qui tourne sous l'user exécutant la commande ps
+		
+		ps -U + RUID : En spécifiant le user/n° UID: Affiche les process du user
+		ou
+		ps -u EUID : Pareil
+
+	Donc si on veut voir tous les process de root:
+	
+		ps -U root -u root
+	Ou par Groupe:
+		 ps -G groupe
+
+	Ou par PID:
+		ps -p 3189
+
+	Ou par PPID (l'init):
+		ps --ppid 1
+	
+	pstree ou ps -A --forest
+
+
+	Pour récupérer l'environnement d'éxecution
+
+	ps e
+
+	Pour choper les process liés à un service 
+	
+	ps -C sshd
+
+	On peut spécifier l'apparence de sortie:
+	ps -o pid,ppid,lstart
+
+	ps --sort
+Comme ps = caca car static
+		
+	watch -n 1 'ps ....' | more pour actualiser par secondes
+
+Pour voir les process en arriere plan:
+	jobs
+	
+Avec TOP : on peut utiliser H pour voir l'aide en direct
+	Kill et renice: c'est à dire controler la priorité du proc
+		de -20 à +20 et priorité max est de -20
+		On l'utilise : renice priorité -pid/-u user
+
+
+############ man /proc #########################
+
+/proc/[pid] ------------> auxv/cgroups (groupes de controles auquel il appartient)
+			 /cmdline : ligne de commande lancant le processus
+			/cwd: renvoit au répertoire de l'executable (whereis)
+			/status (mieux que /stat)
+			
+
+############# Commandes #############################
+
+nice/renice : pour modifier priorité processus CPU ( à la différence de ionice pour les entrées/sorties)
+
+
+	Si on tape nice sans option: affiche la priorité du processus
+	La valeur de priorité par défaut vaut 10
+
+
+pidof: Récupère PID processus
+
+nohup: Execute commande insensible déconnexion
+
+skill: Comme kill mais on peut logout les users:
+	skill -KILL -u userir
+	skill -CONT -u userir : reprendre après un halt
+
+stty : -a Mondre la config du terminal
+	-g La save
+
+runlevel: montre le niveau d'éxecution (il y en a 6)
+
+uptime: Depuis combien de temps le system est actif
+
+disown : Détache un processus
+
+lsof : liste fichiers ouverts par un proc
+	lsof -p PID
+	lsof -i tcp/udp/tcp:80
