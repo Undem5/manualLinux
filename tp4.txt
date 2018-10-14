@@ -1,0 +1,83 @@
+
+################ PAM ############################
+
+Les modules PAM sont des bibliothèques dynamiques (par ex. pam_unix.so) fournissant les six primitives d'authentification définies dans la norme, regroupées dans quatre mécanismes : 
+    Le mécanisme account fournit une seule primitive : il vérifie si le compte demandé est disponible (si le compte n'est pas arrivé à expiration, si l'utilisateur est autorisé à se connecter à cette heure de la journée, etc.).
+   
+   Le mécanisme auth fournit deux primitives ; il assure l'authentification réelle, 
+	éventuellement en demandant et en vérifiant un mot de passe, et il définit des « certificats d'identité » tels que 
+	l'appartenance à un groupe ou des « tickets » kerberos.
+
+   Le mécanisme password fournit une seule primitive :
+	il permet de mettre à jour le jeton d'authentification (en général un mot de passe),
+	soit parce qu'il a expiré, soit parce que l'utilisateur souhaite le modifier.
+
+   Le mécanisme session fournit deux primitives : mise en place et fermeture de la session. 
+	Il est activé une fois qu'un utilisateur a été autorisé afin de lui permettre d'utiliser son compte. 
+	Il lui fournit certaines ressources et certains services, 
+	par exemple en montant son répertoire personnel, en rendant sa boîte aux lettres disponible, en lançant un agent ssh, etc.
+	
+	
+	
+This PAM library is configured locally with a system file, /etc/pam.conf 
+(or a series of configuration files located in /etc/pam.d/) to authenticate a user request via the locally available authentication modules.
+
+
+             ftp     telnet   login   (Applications)
+              |        |        |
+              |        |        |
+              +--------+--------+
+                       |
+                 +-----+-----+
+                 |  PAM API  |   <-- pam.conf file
+                 +-----+-----+
+                       |
+              +--------+--------+
+            UNIX   Kerberos  Smart Cards   (Mechanisms)
+
+               Figure 1: The Basic PAM Architecture
+			   
+the PAM API loads the appropriate authentication module as determined
+      by the configuration file, `pam.conf'
+
+	  
+that PAM loadable object files (the modules) are to be located in the following directory: /lib/security/ or /lib64/security 
+Linux-PAM deals with four separate types of (management) task. These are: authentication management; account management; session management; and password management. 
+
+Exemple: 
+	auth      required  pam_unix.so shadow nullok
+	
+	
+	module prompts the user for a password and then checks the password using the information stored in /etc/passwd and, if it exists, 
+	/etc/shadow. 
+	The pam_unix.so module automatically detects and uses shadow passwords to authenticate users. pam_unix - Module for traditional password authentication 
+	
+	nullok instructs the pam_unix.so module to allow a blank password. 
+	The argument nullok instructs the module to allow the user to change their password from a blank password, otherwise a null password is treated as an account lock. 
+	
+	User no passwd: if your user has sudo privileges,
+		you must enable its NOPASSWD option in the sudoers file. Otherwise, sudo will ask for a password even when you don't have one, and won't accept an empty password.
+	
+	
+/etc/nologin
+	l’administrateur doit effectuer certains travaux de maintenance, il ne faut pas que les utilisateurs puissent se connecter au système. 
+	Exemple de fichier:
+		cat nologin
+			# Systeme indisponible jusqu'à 13:00 (maintenance)
+			
+		Si quelqu'un tente de se log au démarrage, il verra se message si user != root
+		
+
+################################ SHELL ##################################################
+
+
+  I\ Histoire
+  
+  Shells—or command-line interpreters—have a long history, 
+	but this discussion begins with the first UNIX® shell. Ken Thompson (of Bell Labs) developed the first shell for UNIX called the V6 shell in 1971.
+
+	
+	The Bourne shell (1977 bsh/sh) led to the development of the Korn shell (ksh), Almquist shell (ash), and the popular Bourne Again Shell (or Bash) and the C shell (csh)
+
+	
+
