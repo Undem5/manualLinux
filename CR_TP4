@@ -177,4 +177,38 @@ BASH
 
 	A chaque fois qu'on fera un CNTRL C -> affiche booh
 
+########################### Création d'user ##################
+
+
+ useradd -m -g initial_group -G additional_groups -s login_shell username
+
+	L'option -m : crée home directory
+ 
+ passwd username
+
+Fichier important: /etc/login.defs Configuration control definitions for the login package
+		(UID Min, Max, Passwd max/min days,login retries...)
+############## MDP ET PAM ##############################
+
+required: tous les modules utilisant ce controle doivent passer par le succès
+		pour que la vérif soit accordé
+
+requisite: Comme required sauf que l'utilisateur est averti immédiatement
+
+optionnal
+
+sufficient
+
+Les modules se configurent dans /etc/security
+	
+Donc le fichier pwquality.conf
+(man pam_pwquality)
+
+Une application non définie -> /etc/pam.d/other
+	Exemple:  auth required pam_deny.so
+		  account required pam_deny.so
+		  password required pam_deny.so
+		  session required pam_deny.so
+
+Install module -> mov /lib/security pam*.so
 
