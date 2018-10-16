@@ -212,3 +212,113 @@ Une application non définie -> /etc/pam.d/other
 
 Install module -> mov /lib/security pam*.so
 
+################## Information Users ####################
+
+Les informations des users sont stockés dans
+	/home/
+	/etc/sudoers
+	/etc/group
+	/ec/gshadow shadow pour groupe
+	/etc/passwd/
+	/etc/shadown
+
+User database:
+	account:password:UID:GID:GECOS:directory:shell
+	GECOS : optional field informational purpose
+
+
+commande chfn/usermod/
+
+	Add user to other group:
+		usermod -aG additionalGroup username
+		(Si pas de -a, le user est retiré des groupes non indiqué en param dont il est déjà présent :/)
+		
+	Mark password as expired (chage modifie les informations de validité d'un passwd)
+		-d lastday
+		-E  Date fin validitéqq
+		chage -d 0 username : force le user a changer son mdp à login
+	
+	Tout supprimer du user:
+		userdel -r username (-r : home directory, mail also del)
+	
+	Vérifier l'intégrité des fichiers de mdp
+		pwck -s
+
+Pour voir les valeurs attribués par défaut par useradd:
+ /etc/default/useradd
+
+pour décrire un utilisateur: chfn
+
+Pour le chiffrement des mdp: la commande /user/sbin/pwconv transfère mdp crypté dans /etc/shadow
+
+
+#################### Information Groupes #############"
+
+
+	/etc/group
+	/etc/gshadow
+
+Chaque groupes peuvent avoir des admin, membres et mdp
+	gpasswd -A pour définir admin groupe, -M membres
+
+	groupmod, groupdel,groupadd,groupmems (groupe primaire), groups, grpck(vérifie intégriter des groupe),
+
+Chaque utilisateur doit faire partie d'un groupe, son groupe primaire, définit à l'initialisation par défaut.
+Ce groupe est spécifié dans /etc/password par le gid.
+
+	groupdel userir : supprime un groupe au hasard
+
+/etc/group:
+	4 champs: nom du groupe: x pour remplacer un mdp non attribué:gid:liste membre du groupes
+
+################ Variable d'environnements #####################
+
+Pour regarder l'ensemble des variables d'environnements: printenv
+
+On peut run des commandes à travers les variables d'environnement:
+
+	env $EDITOR=vim xterm
+		permet de lancer un shell xterm sans modifier la valeur de la variable EDITOR
+
+On peut définir des variables d'environnements locale à l'user:
+	par /etc/security/pam_env.conf -> dans /etc/environment EDITOR=NANO (variable=valeur)
+
+		bash configuration (bash_profile)
+
+		~/.profile
+
+		systemd par ~/.config/environment.d/*
+
+	
+NOTE: mail config dans : ~/.config/environments/emaildefaults
+
+
+################# Link #################################
+
+Hard link et le fichier originel ne sont pas distinguable, possède même inode
+
+
+############# TIME ##################################	
+
+Hardware clock (RTC Real Time Clock) :
+	hwclock --show
+
+Set HW clock from Sys clock
+	hwclock --systohc
+
+SoftW Clock ( System) calcule depuis le kernel en seconde depuis 1st Janvier 1970 UTC 
+	/etc/adjtime
+	
+	Regarder l'heure:
+		timedatectl
+
+	Mettre l'heure à jour
+		timedatectl set-time "2014-05-26 11:13:54"
+	
+Deux types de normes:
+	localtime: dépend de la timezone
+	UTC ( Coordinated Universal Time): global time standard, indépendant des zones.
+
+	Pour mettre le HW Clock en mode localtime : timedatectl set-local-rtc 1 (0 pour UTC)
+	Tout dépend de /etc/adjtime, si non présent, systemd suppose HW clock en UTC
+
