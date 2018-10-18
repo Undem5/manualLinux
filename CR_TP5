@@ -1,0 +1,78 @@
+
+
+################## SYSLOG #############################
+
+Démon syslogd responsable pour collecter les messages dans /var/log
+	suivant la conf : /etc/rsyslog.conf
+
+	Un selecteur:
+	associé à un facility : auth/authpriv, mail, cron ,daemon, news, syslog, user
+	avec un niveau de priorité (8)
+
+		emerg (emergency) code 0,alert code 1, crit, err, warn, notice, info,debug
+
+rsyslog utilise glibc pour le gethostname()/gethostbyname() qui check le /etc/hsts
+Les messages syslog sont gérers par systemd
+
+journald : composant syslog de systemd: les logs disparaissent quuand ordi éteint.
+	systemd-journald.service
+	/etc/systemd/journald.conf fw = forward
+
+
+Investigate systemd error:
+	journalctl --state=failed
+	journalctl -pf err
+
+	Une fois le PID du process récupérer:
+		journalctl _PID=lepidduproc
+
+	Et on peut regarder dans /etc/modules-load.d/
+	
+	systemctl start systemd-modules-load
+
+	Pour vérifier tout est ok:
+
+	systemctl status systemd-modules-load
+
+	tout est dans /etc/rsyslog.conf
+
+ou dans 
+
+	ls -l /dev/log
+
+
+
+
+
+
+
+
+################ ANCIEN ####################
+
+Pour lancer une commande dans le futur: at, batch et cron
+atq permet de lister les commandes en attente d'exécution
+atrm permet d'effacer travaux en route
+
+Les droits d'accès -> /etc/at.allow .deny (si n'existe pas, dépend de .deny et par défaut tout le monde peut)
+
+	af -f fin_de_tp 11:30
+	
+SYSLOG:
+	mail.info/.err -> stocke information relativent au mail et erreurs
+
+	Le champ sélecteur est séparé end eux parties: facility et une priorité par un "."
+	On peut préciser de multiples facility pour 1 priorité avec ,
+	On peut préciser de multiples selecteurs pour 1 action par ;
+	On peut précéder chaque priorité par = pour préciser priorité unique et non celles au-dessus
+
+
+	via réseau: on peut controler l'état à distance
+	Apache : /var/log/httpd/error_log
+
+	tail afficher par défaut dernière partie (10 lignes) et -f boucle indéfiniement
+
+LogRotate:
+	/etc/logrotate.conf
+	man logrotate
+	/etc/cron.daily/logrotate
+	
