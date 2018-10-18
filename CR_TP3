@@ -33,3 +33,90 @@ La commande ss -> netstat qui est déprécié
 	TCP sockets: ss -at
 	TPC sockets + port number: ss -atn
 	UDP Sockets: ss -au
+
+################## TP ######################################
+
+
+Q1) On a la commande ifconfig
+
+	/proc/net/dev pour voir les interfaces réseaux présentes
+	/etc/network/interfaces
+	
+	ip -s link
+
+Q2)	-s stat ou /proc/net/dev
+
+Q3) Pour les ports tcp: ss -at
+    Pour les ports udp: ss-au
+
+Q4) La commande attribue à l'interface dummy0 l'adresse IP suivante. Mais ne fonctionne que si l'interface existe
+
+Q5) ifconfig -s ou netstat -i pour interface
+    Il y a aussi ip -s link 
+
+Q6) Equivalence ifconfig -a: ip -a address/link
+		ifconfig eth0 192.168.1.1/24 : ip addr  add/del 192.168.1.1 dev eth1 ( ou via @) PAS DE MASQUE necessaire
+
+	Afficher le cache: ip route show cache
+	ip route help/ip address help
+
+	ip rule: routing policy database under linux: RPDB
+	
+	ifconfig eth1 0 = ifdown eth1 = ip link set eth1 down
+
+	ip -6 addr show dev eth0 : Afficher IPv6
+	
+	Assigner adresse MAC: ip link set eth1 address MAC
+	
+	arp -an = ip neighbor
+	netstat -rn = ip route show car -r = route
+	
+	Lister connexion sur listening: ss -lnt
+
+Q7) Pour forcer la fermeture de ports: ss -K kill : 
+		FAUX pour fermer les sockets on peut directement fermer les services avec systemd
+		service sshd stop par xemple
+
+
+Q8) Ifup/ifdown agit directement sur le /etc/network/interfaces (man interface)
+	a la difference de ifconfig 
+
+
+
+Q9) Le fichier est etc/network/interfaces (man à disposition)
+
+Q10) On copie colle du man bridge-utils-interface, on relance avec ifconfig
+
+Q11)
+
+
+####################"" inetd ########################################
+
+Q12) une fois installé, avec ss, on voit écoute PORT UDP 69
+
+Q13) On regarde du côté des services:
+	service --status-all
+	
+	-> openbsd-inetd
+	service inetd status
+	On voit ainsi le PID du proc attaché au service
+
+Q14) Le fichier de conf indique le manuel
+	On autorise tous les ports depuis un accès local: ALL : LOCAL
+	on autorise ftp pour les machines venant du réseau 192.168.0.0, 10.194.168.0 et la machine 192.168.1.1 : in.ftpd : 192.168.0.,10.194.168.0/255.255.255.0, 192.168.1.1	
+	Enfin pour vérifier pas de problèmes: tcpdchk -av
+
+Q15) On autoise tout le reseau et dans le fichier .deny?
+
+Q16) To load all conf files: systctl --system / systctl -p filename
+	increase max connection : net.core.somaxcom
+	Increase memory dedicated netwk intf: net.core.rmem/wmem ... net.ipv4.tcp_rmem/tcp_wmem
+	Increade UDP 4096 limits: net.ipv4.upd_rmem_min/wmem_min
+	ICMP : net.ipv4.conf.all/default.accept/redirect
+	
+Q17) rp: reverse path filtering: Quand la machine se comporte comme un routeur, quand il reçoit un paquet il vérifie au préalable que la source est joignable sur l'interface
+	A martian packet is an IP packet seen on the web that contain source/destination addr reserved for special use IANA
+
+
+Q18) On utilise iptable
+	TP 3A
