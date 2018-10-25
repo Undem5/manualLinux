@@ -75,4 +75,150 @@ LogRotate:
 	/etc/logrotate.conf
 	man logrotate
 	/etc/cron.daily/logrotate
+
+######################## TP #########################"
+
+
+	### SyStemd###
 	
+	dpkg -l | grep systemd
+
+	systemd : systeme et service manager system daemon
+		  when run first proc pid 1, agit comme l'init ( avant sysv init)
+		  si instance systeme pioche dans system.conf et systemd.conf.d/	
+		  si user instance : user.conf et pioche dans user.conf.d
+
+	   	  Pour debuguer
+
+		Systemd entraine la dépendance du système avec 12 "units" de différents types.
+		
+			- Service units: systemd.service describe the work to do
+			- Socket units systemd.socket (autre forme d'activation -> daemon)
+			- Target units: systemd.target
+			- Device units: systemd.device
+			- Mount units: systemd.mount
+			- Automount units: systemd.automount
+			- Timer units (trigger) systemd.timer say when to do the job
+			- Qwap units: systemd.swap
+			- Path units: systemd.path (permet activation d'autres services)
+			- Slice units: group units d'une manière: systemd.slice describe ressource limits
+			- Scope units: systemd.scope
+			- Snapshot
+
+		Pour les units spécial: systemd.special
+		
+		Plusieurs types de dépendances entre service: require/conflicts/after/before
+		Ces units/programmes peuvent changer d'états et ces requêtes
+			sont encapsulés dans "jobs" et maintenu dans "job queue" : systemctl list-jobs
+
+	Au démarrage, systemd active l'unité default.target: il active les services et units.
+		A voir dans systemd.special
+
+	Process systemd sont placés dans des control groupes individuels nommé comme l'unit.
+		Hierarchy présente: voir cgroups.txt
+		Les control groupes sont accessibles dans /sys/fs/cgroup/systemd
+							systemd-cgls
+							ps xawf -eo pid,user,cgroup,args
+					w pour wide output
+					f pour forest
+					x pour les process lié au terminal
+					-e select all process = A
+	systemd compatible avec sysV init system :
+		l'interface /dev/initctl est obsolete permet d'utiliser des vieux binaires, couche de compatibilité 
+	systemd avant d'exécuter vérifie le sense est correcte, fixe si possible et fail si pas possible de marcher.
+	Liste des répertoire des units dans systemd.unit
+	
+	journalctl: view systemd log
+	journalctl -u SERVICE : view service log
+	journalctl -f : tail
+
+	Au niveau des Services: 
+	[Service]
+	require=multi-user.target
+	
+	--> Correspond runlevel 2,3,4 
+	poweroff.target -> runlevel 0 shutdown
+	reboot.target -> runlevel 6 reboot
+	rescue.target -> runlevel 1 rescue shell
+	graphical.target -> runlevel 5
+	
+	#Service
+		Pour qu'un service soit lancé au démarrage: systemctl enable 
+		donc disable ...
+		
+		systemctl list-units
+		démarrer un service : systemctl start/stop
+		Niveau d'exécution : systemctl get-default:
+		Basculer de runlevel : systemctl isolate nom.target
+		bascule par défaut: systemctl set-default nom.target
+		Recharger systemd: systemctl reload daemon
+	#Etat systemd;
+	
+		actif/inactif/activating/deactivating/failed/(? not-found/dead)		
+
+	## Initrd et initrd-less
+	 Systemd les supportes
+	 initrd : disque ram initialisé au démarrage du système initial ram disk (fs initram fs = gzip archivé par cpio)
+	 /dev/initrd : n°majeur 1, n° mineur 250
+		appartient root.disque
+	
+	#### cgroups (kernel.org)####
+
+	Cgroups = control groups :
+		mécanisme hiérarchique d'agrégation/partition de tâches
+		(fils inclus) dans des groupes
+
+		Associe donc un ensemble de tâches avec paramètres pour un ou plusieurs 
+		sous systèmes
+	Un sous-système est un module qui utilise ce groupe (ressource controller) pour gérer les tâches d'une certaine manière. Un sous système pour gérer CPU, un autre pour la mémoire...
+	
+	La hiérarchie : arbre de cgroups de sorte que chaque tâches dans le système est dans l'un de
+		de ces cgroups.
+		Il peut y en avoir plusieurs.
+
+	"user level code" peut créer/détruire cgroups par le nom dans une instance du fs virtuel cgroup.
+	
+	Le groupe par défault root cgroup
+					
+	# A quoi ca sert
+		Groupe de processus pour mieux les controler: si on veut une certaine priorité pour proc web
+			on peut directement les regrouper (phpd, httpd,mysqld)
+		on peut ajouter des controlleurs à un cgroup
+		-cpuset: allocation mémoire cpu
+		-cpuacct: conso cycle cpu
+		-memory: controle mémoire vive
+		-devices: allow/deny accès au périphérique
+		-net_cls: gère accès réseau
+		-blkio: gère accès périphér de type block( hdd...)
+		On possède cette liste dans /proc/cgroups ou /sys/fs/cgroup/
+		pas d'outil par défault (cgcreate...)
+
+	#Implementation
+		Il s'agit d'une extension du kernel. 
+		Les tâches d'un cgroup peuvent être listé
+	#Utilisation
+		Start new job contained wihtin a group using cpuset cgroup subsystem
+		1) mount -t tmpfs cgroup_root /sys/fs/cgroup
+		2) mkdir /sys/fs/cgroup/cpuset
+		3) mount -t cgroup -ocpuset cpuset /sys/fs/cgroup/cpuset
+		4) cd /sys/fs/cgroup/cpuset && mkdir Charlie (nom du cgroup par exemple)
+		5) /bin/echo 2-3 > cpuset.cpus
+		6) /bin/echo 1 > cpuset.memes
+		7) /bin/echo $$ > tasks
+		8) sh
+		9) cat /proc/self/cgroup
+		crée le cgroup Charlie contenie CPUs 2 et 3, mémory node 1 et démarre subshell dans ce cgroup
+	#Usage
+	
+
+		to mount cgroup hierarchy with all subsytems:
+			mount -t cgroup xxx /sys/fs/cgroup
+		ou faire comme 1+2
+		
+		to attach shell to the cgroup:
+			/bin/echo $$ > tasks
+		to remove cgroupe:
+			rmdir my_sub_cs
+		to attach process:
+			/bin/echo PID > tasks ou current shell echo 0 > tasks
+		
