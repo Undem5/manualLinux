@@ -1,0 +1,67 @@
+
+	### Table de partitionement ###
+		
+		partitions nécessaire
+		Sous Win10: 
+			- partition ESP : EFI System Partition pour les appli UEFI
+			- partition MSR : Microsoft Reserved Partition
+			- Partition Windows
+			- Parition WinR: Windows Recovery Environment
+
+		Deux types de tables de partitionnement:
+			-MBR : Master Boot Record
+			-GPT GUID Partition Table
+		
+
+	#### MBR ####
+		- Premier secteur physique d'un disque
+		- Contient
+
+			- code d'amorçage: MasterBootCode
+				ce code lance le bootloader (chargeur d'amorcage située sur la partition marquée "active" (partition primaire)
+			- Une table de partitionnement (Partition Table Entry)
+			- une signature: 0x55 AA
+
+			----------------
+			Master Boot Code
+			---------------
+			1st Partition 
+			Table Entry
+			---------------
+			2nd Partition
+			Table Entry
+			---------------
+			3rd ...
+			---------------
+			4th
+			---------------
+			0x55AA
+			--------------
+			Partition primaires
+			--------------
+			Partition Logique
+		
+			- Dans la table de paritionnement: 4 partitions max de taille max à 2.2 To
+			- Impossible de démarrer sur un disque MBR avec un pc UEFI
+
+		- 446 (Bootstrap) + 64 bytes(Partition table) + 2 (signature) = 512 octets
+		- fdisk permet de modifier mbr
+		- copier le mbr : dd if=/dev/sda of=test.mbr bs=512 count=1
+		- On peut enregistrer les info/backup des table de partitions:
+			sfdisk -d /dev/sda > output.bak (-d pour dump)
+
+		
+		- Pour restore:
+			dd if=test.mbr of=/dev/sda
+			sfdisk /dev/sda < output.bak
+		sfdisk : script for manipulate disk partition table
+		sfdisk -V : verify
+		
+		- Réparation : testdisk et d'autres??
+
+
+	#### GPT ####
+
+		- Pour remplacer le MBR
+		- Jusqu'a 128 partitions et 256 To par partition
+		- Fait parti du standard UEFI 

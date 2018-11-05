@@ -1,0 +1,7 @@
+#### Modification police bash ####
+
+Il faut allez dans /usr/share/consolefonts/ (extension .psf.gz)
+	sudo setfont /usr/share/consolefonts/lebidule.psf.gz
+
+Pour choix définitif, on utilise le paquet console-setup
+	dpkg-reconfigure console-setup

@@ -1,0 +1,26 @@
+
+
+# Source: Artisan Numérique
+
+	### Customisé initrd ###
+
+
+	## intro  ##
+	
+Pour démarrer, un kernel a besoin de ses modules pour causer avec les périphériques. Mais il faut pouvoir
+accéder aux périphériques pour avoir accès à ces modules....
+
+	- Un kernel monolithique est un kernel qui possède les modules nécessaires pour le démarrage
+		Mais de nos jour, il serait énorme avec les nouveautés (ext3,ext4, sata.. bcp trop de choses à prendre en compte)
+
+	- Donc maintenant le démarrage se fait en deux temps:
+		- Premier temps: GRUB fournit au kernel le fichier initrd
+			- Ce fichier (présent dans /boot) contient binaires, modules, des scripts
+			dont un script de démarrage (/init).
+			Ce script a pour but d'aider à trouver les bons modules.
+
+			Le kernel monte ce fichier en mémoire,
+			le définit comme racine du kernel et lance le script.
+			
+		- Puis trouve les modules, monte le vrai système de fichier(/)
+			et démonte initrd.	
