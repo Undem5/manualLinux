@@ -1,0 +1,61 @@
+nproc: number of processing units avalaible
+
+Q1: 
+	man systemd, man systemd.special, man systemd.unit
+
+	systemctl list-units
+	mais plus propre
+		systemctl list-unit-files
+
+	Pour voir les plus actifs/hiérarch
+
+		systemd-cgls controlgroup
+		systemd-cgtop	
+
+Q2:
+	Identification target unit:
+		systemctl list-unit-files --state=static| grep target
+		
+	static?
+
+	On regarde dans systemd.special -> default.target symlink multi-user/graphical.target
+	Systemctl get-default
+
+Q3:
+	Description: Descirpition du service
+	After: s'execute une fois que les services spécifiés soient lancés
+	ConditionPathExists: condition que le path existe
+
+	Restart: est ce que le service restart quand le service exit 
+	ExecReload: trigger a conf reload in the service
+
+Q4:
+	masked: quand un service est masqué, il est complétemetn disabled
+	pas possible de le start 
+	man systemctl
+	mask : link the unit file to /dev/null, supérieur à du disable
+
+Q:
+	Les logs: /var/log
+	Le groupe adm est un groupe bon pour voir les logs
+	car avant /var/log , c'était /var/adm
+	
+	Si persistent storage is enabled,
+		on pourrait voir plusieurs lignes je pense
+
+
+	journalctl -u ssh.service
+	journalctl -p err
+
+	man systemd.resource-control pour le CPUWeight
+ 	 En gros val entre 1 et 1000, par défault 100 pour chacun des user
+	
+	si on met userir à 300 et on laisse root a 100: soit un weight total de 400:
+	alors 300/400=75% du weight cpu total consacré à userir
+	donc les process userir seront exécutés beaucoup plus rapidement
+
+
+access redhat ressource management guide introduction to control groups
+pour les fichiers.slics:
+	/lib/systemd/system/system.slice 	
+voir internet pour les fichiers de config

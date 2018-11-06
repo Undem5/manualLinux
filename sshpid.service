@@ -1,0 +1,11 @@
+[Unit]
+Description=PID du ssh
+Requires=ssh.service
+
+[Service]
+ExecStart=/usr/bin/doit.sh
+ExecStop=
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target	
