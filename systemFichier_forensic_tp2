@@ -1,0 +1,211 @@
+
+		Système de Fichier & Forensic TP2
+
+
+### TRAVAIL PREPARATOIRE ###
+
+
+
+Répertoires:
+	/etc : Config système de l'hôte
+	/bin : commandes essentielles pour tous les users
+	/boot : fichiers du bootloader
+	/lib: librairies partagées
+	/sbin: System binaries
+	/dev: device file (périphériques)
+		/dev/sda: SCSI
+		/dev/hda: IDE hard drive
+		/dev/fd : disquette/floppy
+		/dev/sr0: SCSI CDROM
+	/proc : 
+		info processeur:
+			/proc/cpuinfo
+		Liste périphérques
+			/proc/devices
+		Ports séries:
+			/proc/ioports
+		Interface réseau
+			/proc/net
+		Nombre d'interruptions
+			/proc/interrupts
+			On parle d'interruption matérielle ou IRQ: Interrupt ReQuest
+		FileSystem monté sur le system
+			/proc/filesystem
+			Quand présence d'un "nodev" -> pas présent sur l'hote
+		Temps fonctionnement:
+			/proc/uptime ou commande uptime
+		Bogomips:
+			Mesure non scientifique de la vitesse du processeur
+			calculée par le kernel au moment du boot
+			En root:
+				dmesg | fgrep -i bogomips
+		
+			Note fgrep = grep -F tout comme egrep = grep -E
+
+
+	/bin contient tous les binaires requis par le système pour les réparations
+	/usr/bin contient les binaires non requis
+
+	/proc permet configuration de la stack IP : /proc/sys/net/ipv4
+						   /proc/sys/net/ipv6
+
+		     gestion de la mémoire virtuelle, buffer cache: /proc/sys/vm
+
+
+### mémoire virtuelle, buffer cache ###
+
+Libère mémoire des donnée en cache : echo 1 > /proc/sys/vm/drop_caches
+Libère mémoire des données en tampon:  2
+Les 2 : 3 > ...
+
+Vider swap: swapoff -a; swapon -a
+
+
+La commande sync permet d'écrire sur le disque des données stockées en mémoire
+	Le noyau garde en mémoire des données pour éviter l'écriture sur le disque.
+	
+
+
+### Système de fichier #####
+	Un système de fichier correspond à un périphérique composé de data + metadata.
+	Ces métadata pour les fs extXX = superbloc, groupes blocs, bitmap de blocs et d'inode, table d'inode
+
+	Voir attributs de superbloc/ Afficher inode de la table d'inode : stat <nomfichier> ou stat <numero inod
+
+	Réalisation de tests:
+		On peut utiliser les périphériques de loop (loopback)
+
+		losesetup -a pour voir lequel est utilisé: si n'affiche rien ok
+		losetup -f : voir celui qui est dispo
+		losetup /dev/loop0 notre_fs 
+		On peut ensuite le partitioner, créer un fs...		
+
+		Libération lostup -d /dev/loopX
+			
+		
+
+ #### /etc/fstab ###
+
+
+
+
+
+Note: e2fsck -> fsck pour ext2, efsck -> fck pour ext
+
+tune2fs -l /dev/sda1 -> info sur sda1
+
+
+Q1) On cherche man -k vlan
+
+	man 5 vlan-interfaces -> /etc/network/interfaces
+
+	man 8 vconfig -> /proc/net/vlan/config ou vlan/[vlan-device]
+Création de partition
+
+	fdisk /dev/sda
+	n, p 0, +500M,w
+
+	puis partprobe -> inform the OS of partition table change
+
+	On recherche dans le man de fdisk on voit un /proc/partitionsi
+	Il affiche le minor/major, la taille de block et le nom
+
+	La commande est partprobe pour indiquer au système les nouveautés
+
+	On va dans /proc/cpuinfo
+
+
+#### GRUB
+	grub-reboot? Sinon on peut modifier la conf dans /etc/default/grub
+	On peut spécifier l'OS qu'on veut lancer avec grub:
+		grub-set-default [num] ou num -> /boot/grub/menu.lst ??
+
+	.pf2 Canon Picture Style Editor /boot/grub/fonts/ -> Unifont Regular 16
+	grub.cfg est généré par grub-mkconfig
+	Sinon /proc/cmdline indique les paramètres passés au kernel lors du démarrage
+		ro read-only, quiet
+
+	Depuis le Grub on fait e et on ajoute le contenu de ce fichier et pour faire les changements 
+	permanent: /etc/default/grub avec GRUB CMDLINE LINUX DEFAULT
+	
+	Le /etc/rc*.d/inittab indique le runlevel où * = 0-6
+
+	Pour connaitre le runlevel : runlevel ou who -r
+
+
+Q) On fait un cat /etc/fstab 
+
+	Si on fait un mount, on voit tous les fs qui sont montés.	
+	On test on monte les partitions sur des fs.
+	
+	
+	/etc/mtab pour voir les points de montages actuel ainsi que leurs options =/= de /etc/fstab
+	
+	
+	UUID est un méchanisme d'identifiant unique pour chaque fs. Ils sont générés par la commande mkfs et évite les collisions
+	On peut voir directement les UUID par ls -l /dev/disk/by-uuid/
+	L'avantage est le peu de collision et reste présent même si on plus le disk sur un autre systeme.
+	Dès qu'il est resized/reformatted, l'UUID est changé et c'est chiant à lire	
+
+	Les FS peuvent avoir des Label, Id... UUID = Universally unique identifier
+
+Q) On utilise fdisk sur sda et p dans le menu et on a disklabel type
+
+Q) fdisk -l premier secteur : 2048
+	
+Q) En montant on écrase tout
+Q) on ne peut pas car point de montage occupé car on est dessu
+Q) fuser indique le(s) process sur le répertoire par leur pid
+	donc si on se place sur /mnt/2  on verra notre pid
+	et fuser /mnt/3 n'affichera rien normal car on est sur 2
+Q) Pour que le montage se fasse automatique il faut spécifier l'option auto.
+	On peut monter sur 2 dossier différents, un fichier est crée dans l'un et dans l'autre il y sera aussi présent
+
+Q) On peut utiliser extundelete pour récupérer les fs ext3 et ext4
+	extundelete /dev/sdaX --restore-file directory
+	debugfs est un utilitaire en ligne de commande. une fois lancé, il faut utiliser open pour selectionner le fs
+	Ensuite on utilise help et on se démmerde
+
+	dumpe2fs -h partition
+	et on a toutes les infos de la partition
+Q)	
+	dumpe2fs -h /dev/sda2 | grep inode
+	En supprimant Le compteur free inode a été incrémenté de 1, normal puisque fichier "supprimé"
+	Avec fsck il clean et donc le fichier n'est plus là car supprimé.
+
+	devrait fonctionner?
+
+Q)
+
+### FileSystem ##########
+
+On peut utiliser lsblk pout voir les block device et en spécifiant -f on voit les FS
+	lsblk -f
+
+On peut utiliser wipefs pour effacer la signature d'un périphérique
+
+	l'option -b/--backup permet de créer une sauvegarde dans $HOME/wipefs
+		-a pour all
+
+Avec mkfs option -L on peut spécifier un label lors du formattage de la partition
+Labels peuvent être 16 charactères max 
+Linux max filename 255 charact/ 4096 charc pour le path
+
+La commande findmnt liste tous les points de montages,option,fstype
+
+
+##### FSTAB #########
+
+Indique comment les FS doivent être montés -> systemd lors du boot
+
+<dump> en général 0 désactive le check
+<fsck> ndique l'ordre de priorité de vérification donc root device -> 1
+<options> defaults si flemme
+
+Si bug: mount -o remount, rw /
+
+
+Si dans le fichier on indique /dev/sdaX doit être monté sur /mnt
+On peut indiquer en ligne de commande mount /mnt et il sera bien interpréter
+
+

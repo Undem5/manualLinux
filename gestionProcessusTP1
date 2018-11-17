@@ -1,0 +1,227 @@
+
+
+
+			Gestion des Processus
+
+######	Commande PS	######## 
+
+	Option sous BSD =/= Options sous UNIX
+ 
+	Différents Etats possibles (STAT):
+		Z zombie, X tué, R runnable, S interruptible sleep (waiting for an event), D uninterruptble sleep (usually IO), T Stopped( either by a job control signal or bc being traced)
+		
+	Schéma des états possibles:
+		S <-> R <-> T
+			<-> D
+			-> Z
+
+
+	### Commandes utiles ###
+	
+		ps -A : Affiche tous les process du system
+		ps axu : Pour le format BSD (USER TTY bonus)
+
+		ps -Af: full-format listing (Indique toutes les infos)
+
+		ps -x: Process qui tourne sous l'user exécutant la commande ps
+		
+		ps -U + RUID : En spécifiant le user/n° UID: Affiche les process du user
+		ou
+		ps -u EUID : Pareil
+
+	Donc si on veut voir tous les process de root:
+	
+		ps -U root -u root
+	Ou par Groupe:
+		 ps -G groupe
+
+	Ou par PID:
+		ps -p 3189
+
+	Ou par PPID (l'init):
+		ps --ppid 1
+	
+	pstree ou ps -A --forest
+
+
+	Pour récupérer l'environnement d'éxecution
+
+	ps e
+
+	Pour choper les process liés à un service 
+	
+	ps -C sshd
+
+	On peut spécifier l'apparence de sortie:
+	ps -o pid,ppid,lstart
+
+	ps --sort
+
+Comme ps = caca car static
+		
+	watch -n 1 'ps ....' | more pour actualiser par secondes
+
+Pour voir les process en arriere plan:
+	jobs
+	
+Avec TOP : on peut utiliser H pour voir l'aide en direct
+	Kill et renice: c'est à dire controler la priorité du proc
+		de -20 à +20 et priorité max est de -20
+		On l'utilise : renice priorité -pid/-u user
+
+
+############ man /proc #########################
+
+/proc/[pid] ------------> auxv/cgroups (groupes de controles auquel il appartient)
+			 /cmdline : ligne de commande lancant le processus
+			/cwd: renvoit au répertoire de l'executable (whereis)
+			/status (mieux que /stat)
+			
+
+############# Commandes #############################
+
+nice/renice : pour modifier priorité processus CPU ( à la différence de ionice pour les entrées/sorties)
+
+
+	Si on tape nice sans option: affiche la priorité du processus
+	La valeur de priorité par défaut vaut 10
+
+
+pidof: Récupère PID processus
+
+nohup: Execute commande insensible déconnexion
+
+skill: Comme kill mais on peut logout les users:
+	skill -KILL -u userir
+	skill -CONT -u userir : reprendre après un halt
+
+stty : -a Mondre la config du terminal
+	-g La save
+
+runlevel: montre le niveau d'éxecution (il y en a 6)
+
+uptime: Depuis combien de temps le system est actif
+
+disown : Détache un processus
+
+lsof : liste fichiers ouverts par un proc
+	lsof -p PID
+	lsof -i tcp/udp/tcp:80
+
+
+################### SHELL ##########################
+
+Pour lister les shell présents sur le systeme
+	chsh -l
+Pour en mettre un par défaut:
+	chsh -s path_du_shell
+
+  ### BASH ###
+
+Pour exporter variable : export VARIABLE=content
+
+Alias : ~/.bashrc 
+
+Exécution lecture des fichiers:
+	Interactve: commande executé par intéraction avec l'user depuis clavier (donc non interactif par un process qui le lance)
+	Login : Le shell qui tourne dans la session de l'utilisation qui le lance (Quand on l'ouvre en mode graphique depuis gnome, c'est non login)
+
+	When start as interactive LOGIN shell:
+		/etc/profile (si existe, et qui appelle /etc/bash.bashrc)
+		puis ~/.bash_profile , .bash_login, .profile
+	
+	When login shell exit:
+		lit .bash_logout
+	
+	When start as interactive shell:
+		regarde /etc/bash.bashrc puis .bashrc 
+
+tty : console virtuelle (peut reprrésenter le port série)
+pts : pseudo terminal (connexion distante genre ssh, peuvent se connecter à un shell)
+
+######################### FIND ######################
+
+Voici tous les secrets de cette commande foireuse:
+
+find [search path][files name to search][action]
+
+Exemple: find / -name "*.c" pour tous les fichiers en .c depuis /
+	 find / -user userir file owned by userir
+	 
+	find by time: File accessed:  -atime : +7 = more than 7 days ago, 
+				  		7 = exactily 7 days ago
+						-7 = less than 7 days ago
+		 	File modified : -mtime
+			File modified more recently than another file:
+				find repertoire -newer fichier
+		
+	find by perm :
+			-perm +u=s ou -perm 777
+	find by type : -type d directory/ -type f file
+	find by size: -size +/-/50K
+
+Commmande super cool : find / -type f -size +2000k -exec ls -lh {} \; | awk '{ print $8 ": " $5}'
+		       find . -name "Je te cherche" -exec rm -rf {} \;
+			
+Note : rm -i demande confirmation pour le fichier avant de supprimer
+
+			
+
+
+####################### TP #############################
+
+
+## Grace à la commande TOP, listez et triez les processus par utilisation mémoire (RES)
+
+	On fait shift+F puis on sélectionne les champs qu'on veut faire apparaitre avec ESP puis s pour Sort
+	Commande existance : top -o RES
+
+# Comment s'appelle le premier processus, quelle commande permet de le trouver, combien de file descriptor sont ouvert par ce proc
+	
+	Le premier processus s'appelle init/systemd 
+	On peut le voir par ps -p 1
+	Pour voir les file descriptor ouvert par ce processus: ll /proc/1/fd
+	Pour compter le nombre de fd : 	ll /proc/1/fd | wc -l (word count -line)
+
+# Combien de processus sont dans l'état R:
+	
+	ps aux | awk '{if($8=="R") print $0;}'
+				( || OU )
+# Parmis les signaux standards: quels sont les signaux non interceptables:
+	SIGKILL ET SIGSTOP
+
+# Signal envoyé par défaut par le programme kill?
+	TERM 15
+
+# PS Options permettant d'afficher SessionID, ProcessGroup PID, PPID, Nom du programme
+	
+	ps -o SessionID
+	ps -p PID
+	ps -P PPID
+	pc -c nomProg
+
+# Ouvrez un terminal associée, quel est le terminal associée ?
+	ps o tt permet de voir les TT associées
+
+# Dans le shell ouvert, lancer sleep 1000 et observer depuis un autre shell la sessionId du processu sleep, que vaut-il,
+	Il est égale au PID du shell
+	Le SID de la commande sleep = SID du shell
+	SID: Session ID
+	PGID: Process Group ID
+	UID: user id
+
+# 
+
+	Pour détacher le processus du bash, on utilise la commande nohup  
+	Il se ratache au processus init
+
+# Dans un shell, lancer une commande comosée de plusieurs processus par pipe:
+	
+	les SID et PGRP sont identiques
+	PGRP: process grooup
+
+# Processus Zombie
+
+	Création d'un fils qui exit(0) direct et le père sleep(60).
+	Le fils va être zombie tant que le père ne se reveille pas.
+ 	
