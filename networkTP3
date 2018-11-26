@@ -1,0 +1,200 @@
+
+
+#### INFOS ####
+
+Pour trouver le nom des interfaces: /sys/class/net
+auto: lance les interfaces indiqués au démarrage
+
+mii-tool/ethtool permet de modifier les paramètres des interfaces
+ethtool permet de voir les paramètres de l'interface indiqué: (surtout Speed/Duplex Full)
+	ethtool eth0 par exemple
+	mii-tool -v eth0 par exemple pour voir la marque et les possibilités
+
+Pour modifier avec ethtool:
+	ethtool -s eth0 speed xxx duplex xxxx
+
+
+
+################### NETWORK CONFIGURATION ########################
+
+
+traceroute : Permet de voir le chemin du paquet
+	traceroute 8.8.8.8
+	
+lspci -v | grep Ethernet : Permet de voir le controlleur interface réseau
+				Ainsi que les modules kernel
+
+	Pour charger un module manuelle: modprobe module
+	Pour enlever un module: modprobe -r module
+				rmmod module
+	
+ip route add ADRESSERESEAU via GW dev INTERFACE
+
+démond dhcpd -> /etc/dhcpd.conf (overwrite /etc/resolv.conf)
+demon dhclient -> /etc/dhcp/dhcpclient.conf
+
+
+hostnamectl set-hostname name
+ou alternatif: hostname name
+
+LocalHost resolution : /etc/hosts (systemd)
+
+Changer nom interface réseau/modifier le MTU:
+	/etc/udev/rules.d/bidule.rules
+Les changements sont effectués au démarrage
+
+La commande ss -> netstat qui est déprécié
+
+	TCP sockets: ss -at
+	TPC sockets + port number: ss -atn
+	UDP Sockets: ss -au
+
+################## TP ######################################
+
+
+Q1) Lister les interfaces présentes et leur état:
+	 On a la commande ifconfig
+	/proc/net/dev pour voir les interfaces réseaux présentes
+	/etc/network/interfaces
+	ip -s link
+
+Q2) Comment lister les principales statistiques des interfaces présentes sur le système, y a t'il une équivalence de la commande ifconfig dans /procC?:
+	ip -s link ou
+	ip link show <interface>
+	cat /proc/net/dev
+	Signification des champs:
+		errs: error detected/received
+		colls: collision
+		compressed: number of packet compressed
+		multicast: number multicast frame received
+
+Q3) Comment lister les ports tcp/udp en écoute sur votre station, ainsi que les communications actuellement en cours: 
+	Pour les ports tcp: ss -at
+    	Pour les ports udp: ss -au
+	Pour les communications actuellement en cours:
+		ss 
+		ss -l : listening sockets
+		
+	Communication tcp : -t, udp : -u, unix : -x
+			
+	Donc communications unix listening: ss -xl
+	On peut spécifier l'état demander:
+		ss -u state listening par exemple pour les communications udp
+	On peut regarder les communications par rapport à une adresse IP:
+		ss dst 8.8.8.8		
+
+
+Q4) Que fait la commande ifconfig dummy0 192.168.1.1/24? Quel type d'interface est-ce?
+	La commande attribue à l'interface dummy0 l'adresse IP suivante. Mais ne fonctionne que si l'interface existe
+	Types d'interfaces: 
+		en : ethernet
+		wl: wireless lan
+		ww: wireles wide area networkd
+	Interfaces de types:
+		dummy 
+		lo 
+	On peut avoir autant de Dummy que l'on veut alors qu'il n'y a qu'une seule interface lo
+	Dummy repond au ping, un programme peut se mettre en écoute sur une dummy
+	lo ne supporte pas le broadcast (dhclient ne fonctionne pas dessus) à l'inverse de dummy.
+	A l'inverse, dummy ne gère pas l'ARP et éthernet fonctionne avec ces deux interfaces.
+			
+
+	#### NET-tools vs IP ####
+### NOTE ###
+le paquet net-tools est obsolète
+
+ifconfig -a -> ip link show
+ifconfig eth1 down -> ip link set down eth1
+ifconfig eth1 0 -> ip addr del addresse dev eth1
+ifconfig eth1 -> ip addr show dev eth1
+mii-tools -> ethtool
+route -n/ netstat -rn -> ip route show
+route add -net 192.168.0.1 -> ip ro te add default via 192.168.0.1
+route add -net 192.168.0.1/24 gw eth1 -> ip route add     dev eth1 
+
+Voir multicast:
+	ipmaddr
+Neighbors:
+	ip neigh (avant arp)
+Rename :
+	ip link set name
+	ifrename
+	avant: nameif
+
+#####
+
+Q5)La commande ifconfig affiche des statistiques sur les interfaces , est-il possible d'avoir ces statistiques avec la commande iproute2: ip
+    ifconfig -s ou netstat -i pour interface
+    Il y a aussi ip -s link 
+	
+
+
+Q6) Equivalence ifconfig -a: ip -a address/link
+		ifconfig eth0 192.168.1.1/24 : ip addr  add/del 192.168.1.1 dev eth1 ( ou via @) PAS DE MASQUE necessaire
+
+	Afficher le cache: ip route show cache
+	ip route help/ip address help
+
+	ip rule: routing policy database under linux: RPDB
+	
+	ifconfig eth1 0 = ifdown eth1 = ip link set eth1 down
+
+	ip -6 addr show dev eth0 : Afficher IPv6
+	
+	Assigner adresse MAC: ip link set eth1 address MAC
+	
+	arp -an = ip neighbor
+	netstat -rn = ip route show car -r = route
+	
+	Lister connexion sur listening: ss -lnt
+
+Q7) Pour l'hardening de systèmes, on ferme les ports non nécessaires UDP/TCP en écoute? Est-ce définitif?
+	FAUX pour fermer les sockets on peut directement fermer les services avec systemd
+	service sshd stop par xemple
+	C'est non définitif, pour que ce le soit, il faut disable le  service
+
+Q8) Quelle différence y a t'il entre ifconfig ... up et ifup ...
+	ifup/ifdown agit directement sur le /etc/network/interfaces (man interface)
+	a la difference de ifconfig 
+	
+
+
+Q9) Quel fichier est utilisé pour la configuration des interfaces réseaux? 
+	Le fichier est etc/network/interfaces (man à disposition)
+
+Q10) Créez une interface de type Bridge : 
+   On copie colle du man bridge-utils-interface, on relance avec ifconfig
+
+Q11) 
+
+
+####################"" inetd ########################################
+
+Q12) une fois installé, avec ss, on voit écoute PORT UDP 69
+
+Q13) On regarde du côté des services:
+	service --status-all
+	
+	-> openbsd-inetd
+	service inetd status
+	On voit ainsi le PID du proc attaché au service
+
+Q14) Le fichier de conf indique le manuel
+	On autorise tous les ports depuis un accès local: ALL : LOCAL
+	on autorise ftp pour les machines venant du réseau 192.168.0.0, 10.194.168.0 et la machine 192.168.1.1 : in.ftpd : 192.168.0.,10.194.168.0/255.255.255.0, 192.168.1.1	
+	Enfin pour vérifier pas de problèmes: tcpdchk -av
+
+Q15) On autoise tout le reseau et dans le fichier .deny?
+
+Q16) To load all conf files: systctl --system / systctl -p filename
+	increase max connection : net.core.somaxcom
+	Increase memory dedicated netwk intf: net.core.rmem/wmem ... net.ipv4.tcp_rmem/tcp_wmem
+	Increade UDP 4096 limits: net.ipv4.upd_rmem_min/wmem_min
+	ICMP : net.ipv4.conf.all/default.accept/redirect
+	
+Q17) rp: reverse path filtering: Quand la machine se comporte comme un routeur, quand il reçoit un paquet il vérifie au préalable que la source est joignable sur l'interface
+	A martian packet is an IP packet seen on the web that contain source/destination addr reserved for special use IANA
+
+
+Q18) On utilise iptable
+	TP 3A
