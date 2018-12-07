@@ -3,13 +3,12 @@
 
 			Gestion des Processus
 
-######	Commande PS	######## 
+######	Commande PS & State process  ######## 
 
 	Option sous BSD =/= Options sous UNIX
- 
-	Différents Etats possibles (STAT):
-		Z zombie, X tué, R runnable, S interruptible sleep (waiting for an event), D uninterruptble sleep (usually IO), T Stopped( either by a job control signal or bc being traced)
-		
+		Point commun: Linux = kernel by Linus et BSD = kernel + OS comme FreeBSD
+		Linux -> GNU/Linux et GNU = General Public Licence
+		BSD ont leur propre licence mais reste open source (pas obligé de mettre en publique le code source de l'os qu'on a modifié par exemple à la différence de Linux).
 	Schéma des états possibles:
 		S <-> R <-> T
 			<-> D
@@ -29,6 +28,23 @@
 		ou
 		ps -u EUID : Pareil
 
+
+	Quelques commandes:
+		ps -AlF : full extra mode
+		-H : rajoute threads
+		ax : all process
+		j : sous forme d'abre (exple axjf)
+		
+		ps -eo euser,ruser,suser,fuser,f,comm,label : Sécurité
+		ps axZ  ; Sécurité
+		ps -eM  : Sécurité		
+		
+		ruser = Identifiant d'utilisateur réel (ruid)
+		fuser = UID d'accès au système de fichier
+		suser = Nom d'utilisateur sauvegardé
+		euser = Nom d'utilisateur effectif
+		comm = commande
+
 	Donc si on veut voir tous les process de root:
 	
 		ps -U root -u root
@@ -41,19 +57,20 @@
 	Ou par PPID (l'init):
 		ps --ppid 1
 	
-	pstree ou ps -A --forest
+		pstree ou ps -A --forest
 
 
 	Pour récupérer l'environnement d'éxecution
 
-	ps e
+		ps e
 
 	Pour choper les process liés à un service 
 	
-	ps -C sshd
+		ps -C sshd
 
 	On peut spécifier l'apparence de sortie:
-	ps -o pid,ppid,lstart
+
+		ps -o pid,ppid,lstart
 
 	ps --sort
 
@@ -68,6 +85,24 @@ Avec TOP : on peut utiliser H pour voir l'aide en direct
 	Kill et renice: c'est à dire controler la priorité du proc
 		de -20 à +20 et priorité max est de -20
 		On l'utilise : renice priorité -pid/-u user
+
+
+
+State process:
+	D uninterruptible sleep
+	R running or runnable
+	S Interruptible sleep (waiting for an event to complete)
+	T Stopped 
+	W pagin( not valid since 2.6 kernel)
+	X dead
+	Z defnct (zombie)
+
+	< high priority
+	N low priority
+	L has paged locked into memory
+	s is a session leader
+	l is multi threaded
+	+ in foreground process group
 
 
 ############ man /proc #########################
